@@ -1,0 +1,9 @@
+com\web\authenticationsystem\CORSFilter.class
+com\web\authenticationsystem\LogoutServlet.class
+com\web\authenticationsystem\database\UserDatabase.class
+com\web\authenticationsystem\LoginServlet.class
+com\web\authenticationsystem\UserServlet.class
+com\web\authenticationsystem\CheckSessionServlet.class
+com\web\authenticationsystem\bean\User.class
+com\web\authenticationsystem\security\PasswordUtils.class
+com\web\authenticationsystem\RegisterServlet.class
