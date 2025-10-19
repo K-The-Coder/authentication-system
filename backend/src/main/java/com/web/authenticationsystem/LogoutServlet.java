@@ -4,6 +4,7 @@
  */
 package com.web.authenticationsystem;
 
+import com.web.authenticationsystem.utility.ResponseUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,7 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.*;
 
 /**
  *
@@ -19,6 +20,8 @@ import java.io.PrintWriter;
  */
 @WebServlet(name = "LogoutServlet", urlPatterns = {"/LogoutServlet"})
 public class LogoutServlet extends HttpServlet {
+    
+    private final ResponseUtils json = new ResponseUtils();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -31,23 +34,23 @@ public class LogoutServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        json.setupResponseHeaders(response);
         response.setStatus(HttpServletResponse.SC_OK);
         HttpSession session = request.getSession(false);
         
-        PrintWriter out = response.getWriter();
-        
         if (session != null){
             session.invalidate();
-            out.write("{\"authenticated\": false, \"message\": \"Logout successful\"}");
+            
+            json.sendJsonResponse(response, HttpServletResponse.SC_OK, Map.of(
+                    "authenticated", false,
+                    "message", "Logout successful"
+            ));
         }
         else{
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.write("{\"authenticated\": false, \"error\": \"No active session\"}");
+            json.sendJsonResponse(response, HttpServletResponse.SC_BAD_REQUEST, Map.of(
+                    "authenticated", false,
+                    "error", "No active session"
+            ));
         }
     }
 
@@ -82,11 +85,7 @@ public class LogoutServlet extends HttpServlet {
     
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        json.setupResponseHeaders(response);
         response.setStatus(HttpServletResponse.SC_OK);
     }
 

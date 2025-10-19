@@ -4,11 +4,14 @@
  */
 package com.web.authenticationsystem;
 
+import com.google.gson.Gson;
 import com.web.authenticationsystem.bean.User;
+import com.web.authenticationsystem.utility.ResponseUtils;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.*;
 import jakarta.servlet.http.*;
 import java.io.*;
+import java.util.*;
 
 /**
  *
@@ -16,6 +19,9 @@ import java.io.*;
  */
 @WebServlet(name = "CheckSessionServlet", urlPatterns = {"/CheckSessionServlet"})
 public class CheckSessionServlet extends HttpServlet {
+    
+    private final Gson gson = new Gson();
+    private final ResponseUtils json = new ResponseUtils();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -28,23 +34,24 @@ public class CheckSessionServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        json.setupResponseHeaders(response);
         response.setStatus(HttpServletResponse.SC_OK);
         
         HttpSession session = request.getSession(false);
-        PrintWriter out = response.getWriter();
         
         if (session != null && session.getAttribute("user") != null){
             User user = (User) session.getAttribute("user");
-            out.write("{\"authenticated\": true, \"email\": \"" + user.getEmail() +"\"}");
+            
+            json.sendJsonResponse(response, HttpServletResponse.SC_OK, Map.of(
+                    "authenticated", true,
+                    "email", user.getEmail()
+            ));
+            
         }
         else{
-            out.write("{\"authenticated\": false}");
+            json.sendJsonResponse(response, HttpServletResponse.SC_OK, Map.of(
+                    "authenticated", false
+            ));
         }
     }
 
@@ -79,12 +86,7 @@ public class CheckSessionServlet extends HttpServlet {
     
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        json.setupResponseHeaders(response);
         response.setStatus(HttpServletResponse.SC_OK);
     }
 

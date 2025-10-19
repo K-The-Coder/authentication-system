@@ -6,4 +6,5 @@ com\web\authenticationsystem\UserServlet.class
 com\web\authenticationsystem\CheckSessionServlet.class
 com\web\authenticationsystem\bean\User.class
 com\web\authenticationsystem\security\PasswordUtils.class
+com\web\authenticationsystem\utility\ResponseUtils.class
 com\web\authenticationsystem\RegisterServlet.class

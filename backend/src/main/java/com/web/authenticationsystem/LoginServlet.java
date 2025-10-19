@@ -7,6 +7,7 @@ package com.web.authenticationsystem;
 import com.web.authenticationsystem.bean.User;
 import com.web.authenticationsystem.database.UserDatabase;
 import com.web.authenticationsystem.security.PasswordUtils;
+import com.web.authenticationsystem.utility.ResponseUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,7 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.*;
 
 /**
  *
@@ -22,6 +23,8 @@ import java.io.PrintWriter;
  */
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
+    
+    private final ResponseUtils json = new ResponseUtils();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -34,22 +37,16 @@ public class LoginServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        json.setupResponseHeaders(response);
         
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         
-        PrintWriter out = response.getWriter();
-        
         if (email == null || password == null || email.isBlank() || password.isBlank()){
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.write("{\"authenticated\": false, \"error\": \"Email and password required\"}");
-            return;
+            json.sendJsonResponse(response, HttpServletResponse.SC_BAD_REQUEST, Map.of(
+                    "authenticated", false,
+                    "error", "Email and password required!"
+            ));
         }
         
         String storedHash = UserDatabase.getPasswordHash(email);
@@ -57,14 +54,24 @@ public class LoginServlet extends HttpServlet {
         if (storedHash != null && PasswordUtils.verifyPassword(password, storedHash)){
             HttpSession session = request.getSession();
             session.setAttribute("user", new User(email));
-            out.write("{\"authenticated\": true, \"email\": \"" + email + "\"}");
+            
+            json.sendJsonResponse(response, HttpServletResponse.SC_OK, Map.of(
+                    "authenticated", true,
+                    "email", email
+            ));
+            
         }
         else{
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            out.write("{\"authenticated\": false, \"error\": \"Invalid Credentials\"}");
+            json.sendJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, Map.of(
+                    "authenticated", false,
+                    "error", "Invalid Credentials"
+            ));
+            
         }
        
     }
+    
+    
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -97,12 +104,7 @@ public class LoginServlet extends HttpServlet {
     
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        json.setupResponseHeaders(response);
         response.setStatus(HttpServletResponse.SC_OK);
     }
 

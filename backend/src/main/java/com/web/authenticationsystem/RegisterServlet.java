@@ -7,11 +7,12 @@ package com.web.authenticationsystem;
 import com.web.authenticationsystem.bean.User;
 import com.web.authenticationsystem.database.UserDatabase;
 import com.web.authenticationsystem.security.PasswordUtils;
+import com.web.authenticationsystem.utility.ResponseUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.*;
 
 /**
  *
@@ -19,6 +20,8 @@ import java.io.PrintWriter;
  */
 @WebServlet(name = "RegisterServlet", urlPatterns = {"/RegisterServlet"})
 public class RegisterServlet extends HttpServlet {
+    
+    private final ResponseUtils json = new ResponseUtils();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -31,21 +34,18 @@ public class RegisterServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        json.setupResponseHeaders(response);
         
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         
-        PrintWriter out = response.getWriter();
         
         if (email == null || password == null || email.isBlank() || password.isBlank()){
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.write("{\"authenticated\": false, \"error\": \"Email and password required\"}");
+            json.sendJsonResponse(response, HttpServletResponse.SC_BAD_REQUEST, Map.of(
+                    "authenticated", false,
+                    "error", "Email and password required!"
+            ));
+            
             return;
         }
         
@@ -56,12 +56,19 @@ public class RegisterServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("user", new User(email));
             
-            response.setStatus(HttpServletResponse.SC_OK);
-            out.write("{\"authenticated\": true, \"message\": \"Registration successful\", \"email\": \"" + email + "\"}");
+            json.sendJsonResponse(response, HttpServletResponse.SC_OK, Map.of(
+                    "authenticated", true,
+                    "message", "Registration successful",
+                    "email", email
+            ));
+            
         }
         else{
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            out.write("{\"authenticated\": false, \"error\": \"User already exists\"}");
+            json.sendJsonResponse(response, HttpServletResponse.SC_CONFLICT, Map.of(
+                    "authenticated", false,
+                    "error", "User already exists"
+            ));
+            
         }
     }
 
@@ -96,12 +103,7 @@ public class RegisterServlet extends HttpServlet {
     
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173"); // Use your frontend's origin
-        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        json.setupResponseHeaders(response);
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
