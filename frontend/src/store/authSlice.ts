@@ -24,8 +24,9 @@ export const register = createAsyncThunk(
       await dispatch(verifySession());
       return response;
     } catch (err: any) {
+      const apiMessage = err?.response?.data?.error || err?.response?.data?.message || "Registration Failed";
       return rejectWithValue(
-        err.response?.data || { message: "Registration Failed" }
+        { message: apiMessage }
       );
     }
   }
@@ -42,7 +43,8 @@ export const login = createAsyncThunk(
       await dispatch(verifySession());
       return response;
     } catch (err: any) {
-      return rejectWithValue(err.response?.data || { message: "Login Failed" });
+      const apiMessage = err.response?.data?.error || err.response?.data?.message || "Login Failed";
+      return rejectWithValue({ message: apiMessage });
     }
   }
 );
